@@ -1,4 +1,4 @@
-# Cortex Track (SentinalOR) — AI Surgical Asset Verification System
+# Cortex Track  — AI Surgical Asset Verification System
 
 Real-time computer vision system that monitors surgical trays and verifies operator identity using YOLOv8 object detection and face recognition, with automated breach alerts and a live monitoring dashboard.
 
