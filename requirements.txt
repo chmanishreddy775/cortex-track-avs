@@ -1,0 +1,7 @@
+opencv-python
+requests
+ultralytics
+numpy
+Pillow
+Click
+face_recognition_models
