@@ -1,0 +1,6 @@
+{
+       "EMAIL_SENDER": "your-email@gmail.com",
+       "EMAIL_APP_PASSWORD": "your-app-password-here",
+       "EMAIL_RECEIVER": "receiver-email@gmail.com",
+       "TRACKER_API_KEY": "your-secret-key-here"
+   }
