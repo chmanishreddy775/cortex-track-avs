@@ -1,9 +1,4 @@
-# Ignore secure configuration files
 config.json
-
-# Ignore database files (do not upload logs or user hashes)
 vault.db
-
-# Ignore Python cache files
 __pycache__/
 *.pyc
