@@ -233,10 +233,6 @@ header p { margin: 5px 0 0 0; color: var(--text-muted); }
 <body>
 <div id="lightfall-bg"></div>
 
-<div style="max-width: 700px; margin: 0 auto 20px auto; background: rgba(59,130,246,0.12); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 14px 18px; color: var(--text-main); font-size: 14px;">
-🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real face recognition</strong> (matching your live camera feed against our enrolled operator photo) and <strong>real object detection</strong> (COCO-SSD, spotting a phone for Item A and a book for Item B) entirely in your browser. Our production system additionally uses a custom-trained YOLOv8 model + dlib running locally for surgical-instrument-specific detection and higher accuracy. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
-</div>
-
 <div id="authGate" class="auth-card glow-card">
 <span class="edge-light"></span>
 <div class="glow-inner">
@@ -244,13 +240,13 @@ header p { margin: 5px 0 0 0; color: var(--text-muted); }
 <p class="subtitle">Secure Identity Verification for Tracked Assets</p>
 <div class="input-group">
 <label>Username</label>
-<input type="text" id="usernameInput" placeholder="demo">
+<input type="text" id="usernameInput" placeholder="Enter username">
 </div>
 <div class="input-group">
 <label>Password</label>
-<input type="password" id="passwordInput" placeholder="demo">
+<input type="password" id="passwordInput" placeholder="Enter password">
 </div>
-<button class="auth-btn" onclick="handleAuthSubmit()">Authenticate Session (Demo)</button>
+<button class="auth-btn" onclick="handleAuthSubmit()">Authenticate Session</button>
 <p id="authMsg" style="margin-top: 15px; font-weight: bold; text-align: center; display: none;"></p>
 </div>
 </div>
@@ -506,7 +502,7 @@ async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
   let lastLogTime = 0;
   let itemALastSeen = 0;
   let itemBLastSeen = 0;
-  const MISSING_GRACE_MS = 1500; // item must be gone this long before flipping to WAITING
+  const MISSING_GRACE_MS = 3000; // item must be gone this long before flipping to WAITING
 
   const pushLog = (text) => {
     demoHistory.unshift({ time: new Date().toISOString(), log: text });
@@ -522,9 +518,12 @@ async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
     if (!video.srcObject) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Real face detection + identity match against enrolled reference photo
-    const faceResults = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks().withFaceDescriptors();
+    // Real face detection + real object detection, run concurrently to keep the loop fast
+    const [faceResults, predictions] = await Promise.all([
+      faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks().withFaceDescriptors(),
+      cocoModel.detect(video)
+    ]);
 
     let verifiedFound = false;
     faceResults.forEach(fr => {
@@ -540,8 +539,7 @@ async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
       if (isVerified) verifiedFound = true;
     });
 
-    // Real object detection: phone -> Item A, bottle -> Item B
-    const predictions = await cocoModel.detect(video);
+    // Real object detection: phone -> Item A, book -> Item B
     let itemAFound = false;
     let itemBFound = false;
 
