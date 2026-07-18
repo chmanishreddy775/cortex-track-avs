@@ -234,7 +234,7 @@ header p { margin: 5px 0 0 0; color: var(--text-muted); }
 <div id="lightfall-bg"></div>
 
 <div style="max-width: 700px; margin: 0 auto 20px auto; background: rgba(59,130,246,0.12); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 14px 18px; color: var(--text-main); font-size: 14px;">
-🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real face recognition</strong> (matching your live camera feed against our enrolled operator photo) and <strong>real object detection</strong> (COCO-SSD, spotting a phone for Item A and a bottle for Item B) entirely in your browser. Our production system additionally uses a custom-trained YOLOv8 model + dlib running locally for surgical-instrument-specific detection and higher accuracy. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
+🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real face recognition</strong> (matching your live camera feed against our enrolled operator photo) and <strong>real object detection</strong> (COCO-SSD, spotting a phone for Item A and a book for Item B) entirely in your browser. Our production system additionally uses a custom-trained YOLOv8 model + dlib running locally for surgical-instrument-specific detection and higher accuracy. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
 </div>
 
 <div id="authGate" class="auth-card glow-card">
@@ -293,7 +293,7 @@ header p { margin: 5px 0 0 0; color: var(--text-muted); }
 <div class="card glow-card" id="cardItemB">
 <span class="edge-light"></span>
 <div class="glow-inner">
-<h2>Tracking Zone / Item B (Bottle)</h2>
+<h2>Tracking Zone / Item B (Book)</h2>
 <div class="status-value">Tracking Matrix</div>
 <p>Status: <span id="statusItemB" class="state-waiting">WAITING</span></p>
 </div>
@@ -490,7 +490,7 @@ function startScanner() {
 
 // COCO-SSD class names we care about, mapped to tracking zones
 const ITEM_A_CLASS = "cell phone"; // Item A = phone
-const ITEM_B_CLASS = "bottle";     // Item B = bottle
+const ITEM_B_CLASS = "book";       // Item B = book
 const DETECTION_SCORE_THRESHOLD = 0.55;
 
 async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
@@ -504,6 +504,9 @@ async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
 
   const demoHistory = [];
   let lastLogTime = 0;
+  let itemALastSeen = 0;
+  let itemBLastSeen = 0;
+  const MISSING_GRACE_MS = 1500; // item must be gone this long before flipping to WAITING
 
   const pushLog = (text) => {
     demoHistory.unshift({ time: new Date().toISOString(), log: text });
@@ -558,21 +561,27 @@ async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
       ctx.fillText(`${p.class} — ${Math.round(p.score * 100)}%`, x, y - 6);
     });
 
-    txtA.innerText = itemAFound ? "FOUND" : "WAITING";
-    txtA.className = "state-" + (itemAFound ? "found" : "waiting");
-    txtB.innerText = itemBFound ? "FOUND" : "WAITING";
-    txtB.className = "state-" + (itemBFound ? "found" : "waiting");
+    const now2 = performance.now();
+    if (itemAFound) itemALastSeen = now2;
+    if (itemBFound) itemBLastSeen = now2;
+    const itemAStable = (now2 - itemALastSeen) < MISSING_GRACE_MS;
+    const itemBStable = (now2 - itemBLastSeen) < MISSING_GRACE_MS;
+
+    txtA.innerText = itemAStable ? "FOUND" : "WAITING";
+    txtA.className = "state-" + (itemAStable ? "found" : "waiting");
+    txtB.innerText = itemBStable ? "FOUND" : "WAITING";
+    txtB.className = "state-" + (itemBStable ? "found" : "waiting");
 
     operatorEl.innerText = verifiedFound ? "VERIFIED OPERATOR" : (faceResults.length > 0 ? "UNKNOWN PERSON" : "Awaiting Scan...");
 
-    const allStable = verifiedFound && itemAFound && itemBFound;
+    const allStable = verifiedFound && itemAStable && itemBStable;
     mainWorkspace.classList.toggle("status-stable-glow", allStable);
     mainWorkspace.classList.toggle("status-alert-glow", !allStable);
     mainWorkspace.style.borderColor = allStable ? "var(--accent-green)" : "var(--accent-red)";
 
     statusText.innerText = allStable
       ? "System Pipeline: ACTIVE & STABLE. Operator verified, both items in zone."
-      : `System Pipeline: ACTIVE. Operator: ${verifiedFound ? "OK" : "MISSING"} | Item A: ${itemAFound ? "OK" : "MISSING"} | Item B: ${itemBFound ? "OK" : "MISSING"}`;
+      : `System Pipeline: ACTIVE. Operator: ${verifiedFound ? "OK" : "MISSING"} | Item A: ${itemAStable ? "OK" : "MISSING"} | Item B: ${itemBStable ? "OK" : "MISSING"}`;
     statusText.style.color = allStable ? "var(--accent-green)" : "var(--accent-red)";
 
     const now = Date.now();
@@ -580,7 +589,7 @@ async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
       if (allStable) {
         pushLog(`Live: verified operator, phone + bottle both in zone.`);
       } else {
-        pushLog(`🚨 BREACH: ${!verifiedFound ? "no verified operator" : "operator OK"}, Item A ${itemAFound ? "found" : "MISSING"}, Item B ${itemBFound ? "found" : "MISSING"}.`);
+        pushLog(`🚨 BREACH: ${!verifiedFound ? "no verified operator" : "operator OK"}, Item A ${itemAStable ? "found" : "MISSING"}, Item B ${itemBStable ? "found" : "MISSING"}.`);
       }
       lastLogTime = now;
     }
