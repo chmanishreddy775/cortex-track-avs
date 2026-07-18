@@ -259,13 +259,17 @@
             z-index: 2;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.1.0/dist/blazeface.min.js"></script>
 </head>
 <body>
     <div id="lightfall-bg"></div>
     
     <div style="max-width: 700px; margin: 0 auto 20px auto; background: rgba(59,130,246,0.12); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 14px 18px; color: var(--text-main); font-size: 14px;">
-        🔵 <strong>Live Demo Mode</strong> — this hosted page opens your <strong>real camera</strong> in the browser. Detection boxes shown are a simulated preview overlay (browsers can't run our Python/YOLOv8/dlib models directly) — the actual AI detection and face recognition run locally in real time. See the full working system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
+        🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real AI detection</strong> in your browser (TensorFlow.js object + face detection models) on your live camera feed. Our production system uses a custom-trained YOLOv8 model + dlib face recognition running locally in Python for higher accuracy on surgical instruments specifically. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
     </div>
+
 
 
     <div id="authGate" class="auth-card glow-card">
@@ -493,14 +497,26 @@
             .then(stream => {
                 video.srcObject = stream;
                 camWrap.style.display = "block";
-                btn.innerText = "Vision Thread Active";
-                btn.style.backgroundColor = "var(--border-color)";
-                btn.style.cursor = "not-allowed";
+                btn.innerText = "Loading AI models...";
 
-                video.onloadedmetadata = () => {
+                video.onloadedmetadata = async () => {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
-                    drawSimulatedOverlay(video, canvas);
+                    try {
+                        const [objModel, faceModel] = await Promise.all([
+                            cocoSsd.load(),
+                            blazeface.load()
+                        ]);
+                        btn.innerText = "Vision Thread Active (Live Detection)";
+                        btn.style.backgroundColor = "var(--border-color)";
+                        btn.style.cursor = "not-allowed";
+                        runLiveDetection(video, canvas, objModel, faceModel);
+                    } catch (e) {
+                        camError.style.display = "block";
+                        camError.innerText = "⚠️ Model load failed: " + e.message + " — check internet connection for CDN model files.";
+                        btn.disabled = false;
+                        btn.innerText = "Initialize Vision Thread";
+                    }
                 };
             })
             .catch(err => {
@@ -511,39 +527,70 @@
             });
     }
 
-    function drawSimulatedOverlay(video, canvas) {
+    async function runLiveDetection(video, canvas, objModel, faceModel) {
         const ctx = canvas.getContext("2d");
-        let t = 0;
-        function frame() {
+        const statusText = document.getElementById("setupStatus");
+        const txtA = document.getElementById("statusItemA");
+        const operatorEl = document.getElementById("operatorName");
+        const logBox = document.getElementById("complianceLog");
+        const demoHistory = [];
+        let lastLogTime = 0;
+
+        const pushLog = (text) => {
+            demoHistory.unshift({ time: new Date().toISOString(), log: text });
+            if (demoHistory.length > 5) demoHistory.pop();
+            logBox.innerHTML = demoHistory.map(entry => {
+                const time = new Date(entry.time).toLocaleTimeString();
+                const color = entry.log.includes("BREACH") ? "var(--accent-red)" : "#34d399";
+                return `<div class="log-entry" style="color: ${color}"><span class="log-time">[${time}]</span>${entry.log}</div>`;
+            }).join("");
+        };
+
+        async function detectLoop() {
             if (!video.srcObject) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            t += 0.02;
 
-            // Simulated instrument box (gently drifting, labeled as demo)
-            const bx = canvas.width * (0.15 + 0.05 * Math.sin(t));
-            const by = canvas.height * (0.55 + 0.03 * Math.cos(t * 1.3));
-            const bw = canvas.width * 0.22;
-            const bh = canvas.height * 0.18;
-            ctx.strokeStyle = "#10b981";
-            ctx.lineWidth = 3;
-            ctx.strokeRect(bx, by, bw, bh);
-            ctx.fillStyle = "#10b981";
-            ctx.font = "14px monospace";
-            ctx.fillText("Item_A (simulated) 0.9", bx, by - 6);
+            // Real object detection (COCO-SSD, actual model inference)
+            const objects = await objModel.detect(video);
+            let itemFound = false;
+            objects.forEach(obj => {
+                ctx.strokeStyle = "#10b981";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(obj.bbox[0], obj.bbox[1], obj.bbox[2], obj.bbox[3]);
+                ctx.fillStyle = "#10b981";
+                ctx.font = "14px monospace";
+                ctx.fillText(`${obj.class} ${(obj.score * 100).toFixed(0)}%`, obj.bbox[0], obj.bbox[1] - 6);
+                itemFound = true;
+            });
 
-            // Simulated face box centered upper area
-            const fx = canvas.width * 0.38;
-            const fy = canvas.height * 0.15;
-            const fw = canvas.width * 0.22;
-            const fh = canvas.height * 0.3;
-            ctx.strokeStyle = "#3b82f6";
-            ctx.strokeRect(fx, fy, fw, fh);
-            ctx.fillStyle = "#3b82f6";
-            ctx.fillText("Face match (simulated)", fx, fy - 6);
+            // Real face detection (BlazeFace, actual model inference)
+            const faces = await faceModel.estimateFaces(video, false);
+            faces.forEach(face => {
+                const [x, y] = face.topLeft;
+                const [x2, y2] = face.bottomRight;
+                ctx.strokeStyle = "#3b82f6";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, x2 - x, y2 - y);
+                ctx.fillStyle = "#3b82f6";
+                ctx.font = "14px monospace";
+                ctx.fillText("Face detected", x, y - 6);
+            });
 
-            requestAnimationFrame(frame);
+            txtA.innerText = itemFound ? "FOUND" : "WAITING";
+            txtA.className = "state-" + (itemFound ? "found" : "waiting");
+            operatorEl.innerText = faces.length > 0 ? "OPERATOR DETECTED" : "Awaiting Scan...";
+            statusText.innerText = `System Pipeline: ACTIVE. ${objects.length} object(s), ${faces.length} face(s) detected live.`;
+            statusText.style.color = "var(--accent-green)";
+
+            const now = Date.now();
+            if (now - lastLogTime > 3000) {
+                pushLog(`Live detection: ${objects.length} object(s), ${faces.length} face(s) found.`);
+                lastLogTime = now;
+            }
+
+            requestAnimationFrame(detectLoop);
         }
-        frame();
+        detectLoop();
     }
 
     function startTelemetryLoop() {
