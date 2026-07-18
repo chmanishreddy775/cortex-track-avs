@@ -1,682 +1,672 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Cortex Track Asset Verification System (AVS)</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        :root {
-            --bg-dark: #0b0f19;
-            --card-bg: #111827;
-            --card-bg-glass: rgba(17, 24, 39, 0.45); /* Semi-transparent for Lightfall */
-            --border-color: #1f2937;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --accent-blue: #3b82f6;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-        }
-
-        body {
-            background-color: transparent;
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 90vh;
-        }
-
-        /* Lightfall Background Container */
-        #lightfall-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .container { 
-            width: 100%; max-width: 1100px; margin: 0 auto; 
-            border: 1px solid rgba(255, 255, 255, 0.05); /* NEW: Ultra-thin border */
-            padding: 20px; /* NEW: Reduced padding */
-            border-radius: 12px; 
-            background-color: rgba(11, 15, 25, 0.7); /* NEW: Solidified background */
-            backdrop-filter: blur(10px); 
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); /* NEW: Shadow for depth */
-            transition: all 0.5s ease;
-        }
-
-        /* =========================================
+<title>Cortex Track Asset Verification System (AVS)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --bg-dark: #0b0f19;
+  --card-bg: #111827;
+  --card-bg-glass: rgba(17, 24, 39, 0.45); /* Semi-transparent for Lightfall */
+  --border-color: #1f2937;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+}
+body {
+  background-color: transparent;
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+}
+/* Lightfall Background Container */
+#lightfall-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+}
+.container {
+  width: 100%; max-width: 1100px; margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.05); /* NEW: Ultra-thin border */
+  padding: 20px; /* NEW: Reduced padding */
+  border-radius: 12px;
+  background-color: rgba(11, 15, 25, 0.7); /* NEW: Solidified background */
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); /* NEW: Shadow for depth */
+  transition: all 0.5s ease;
+}
+/* =========================================
    BREATHING AURA ANIMATIONS
-   ========================================= */
+========================================= */
 @keyframes pulse-green {
-    0%, 100% {
-        border-color: rgba(16, 185, 129, 0.4);
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.2),
-                    0 0 20px rgba(16, 185, 129, 0.1),
-                    0 0 30px rgba(16, 185, 129, 0.05);
-    }
-    50% {
-        border-color: rgba(16, 185, 129, 1);
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4),
-                    0 0 35px rgba(16, 185, 129, 0.3),
-                    0 0 60px rgba(16, 185, 129, 0.15),
-                    0 0 90px rgba(16, 185, 129, 0.05);
-    }
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2),
+                0 0 20px rgba(16, 185, 129, 0.1),
+                0 0 30px rgba(16, 185, 129, 0.05);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 1);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4),
+                0 0 35px rgba(16, 185, 129, 0.3),
+                0 0 60px rgba(16, 185, 129, 0.15),
+                0 0 90px rgba(16, 185, 129, 0.05);
+  }
 }
-
 @keyframes pulse-red {
-    0%, 100% {
-        border-color: rgba(239, 68, 68, 0.5);
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3),
-                    0 0 25px rgba(239, 68, 68, 0.15),
-                    0 0 40px rgba(239, 68, 68, 0.05);
-    }
-    50% {
-        border-color: rgba(239, 68, 68, 1);
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.6),
-                    0 0 40px rgba(239, 68, 68, 0.4),
-                    0 0 70px rgba(239, 68, 68, 0.2),
-                    0 0 100px rgba(239, 68, 68, 0.1);
-    }
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3),
+                0 0 25px rgba(239, 68, 68, 0.15),
+                0 0 40px rgba(239, 68, 68, 0.05);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 1);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6),
+                0 0 40px rgba(239, 68, 68, 0.4),
+                0 0 70px rgba(239, 68, 68, 0.2),
+                0 0 100px rgba(239, 68, 68, 0.1);
+  }
 }
-
 .container.status-stable-glow {
-    animation: pulse-green 3s infinite ease-in-out;
+  animation: pulse-green 3s infinite ease-in-out;
 }
-
 .container.status-alert-glow {
-    /* Slightly faster pulse to create a sense of urgency */
-    animation: pulse-red 1.5s infinite ease-in-out; 
+  /* Slightly faster pulse to create a sense of urgency */
+  animation: pulse-red 1.5s infinite ease-in-out;
 }
-
-        #dashboardWorkspace { display: none; }
-
-        /* Dashboard Components */
-        header { border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;}
-        header h1 { margin: 0; font-size: 28px; }
-        header p { margin: 5px 0 0 0; color: var(--text-muted); }
-        .logout-btn { background: none; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 5px 15px; border-radius: 4px; cursor: pointer; }
-
-        .btn-group { display: flex; gap: 15px; }
-        .btn { color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
-        #startScannerBtn { background-color: var(--accent-green); }
-
-        .status-text, .logs-box, .status-value {
-            color: var(--text-muted); font-size: 14px; margin-top: 15px; font-family: 'JetBrains Mono';
-            background: rgba(7, 10, 18, 0.7); padding: 10px; border-radius: 4px; border-left: 3px solid var(--accent-blue); margin-bottom: 0;
-        }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .card h2 { margin-top: 0; font-size: 16px; text-transform: uppercase; color: var(--text-muted); }
-        .status-value { font-size: 24px; font-weight: bold; margin: 10px 0; }
-        .state-waiting { color: #eab308; }
-        .state-found { color: var(--accent-green); }
-
-        /* DB Timeline Box */
-        .logs-box { 
-            background-color: rgba(7, 10, 18, 0.6); border: 1px solid var(--border-color); 
-            border-radius: 8px; padding: 15px; font-family: 'JetBrains Mono'; 
-            height: 150px; overflow-y: auto; color: #34d399; 
-        }
-        .log-entry { margin-bottom: 8px; border-bottom: 1px solid rgba(31, 41, 55, 0.5); padding-bottom: 5px; }
-        .log-time { color: var(--text-muted); margin-right: 10px; }
-
-        /* Auth Form Overrides */
-        .auth-card h2 { margin-top: 0; text-align: center; }
-        .auth-card p.subtitle { color: var(--text-muted); text-align: center; font-size: 14px; margin-bottom: 25px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 13px; text-transform: uppercase; }
-        .input-group input {
-            width: 100%; padding: 12px; background: rgba(7, 10, 18, 0.6); border: 1px solid var(--border-color);
-            border-radius: 6px; color: white; font-size: 14px; box-sizing: border-box;
-        }
-        .auth-btn {
-            width: 100%; background: var(--accent-blue); color: white; border: none;
-            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px;
-        }
-        .auth-btn:hover { background: #2563eb; }
-
-        /* =========================================
-           BORDER GLOW CSS (Converted from React Bits)
-           ========================================= */
-        .glow-card {
-            --edge-proximity: 0;
-            --cursor-angle: 45deg;
-            --edge-sensitivity: 30;
-            --color-sensitivity: calc(var(--edge-sensitivity) + 20);
-            --border-radius: 12px;
-            --glow-padding: 40px;
-            --cone-spread: 25;
-
-            position: relative;
-            border-radius: var(--border-radius);
-            isolation: isolate;
-            transform: translate3d(0, 0, 0.01px);
-            display: grid;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: var(--card-bg, #120F17);
-            overflow: visible;
-            padding: 15px; /* Base padding for cards */
-        }
-        
-        .auth-card.glow-card { padding: 40px; width: 100%; max-width: 400px; margin: 0 auto; }
-        .setup-console.glow-card { margin-bottom: 30px; }
-
-        .glow-card::before,
-        .glow-card::after,
-        .glow-card > .edge-light {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            transition: opacity 0.25s ease-out;
-            z-index: -1;
-        }
-
-        .glow-card:not(:hover):not(.sweep-active)::before,
-        .glow-card:not(:hover):not(.sweep-active)::after,
-        .glow-card:not(:hover):not(.sweep-active) > .edge-light {
-            opacity: 0;
-            transition: opacity 0.75s ease-in-out;
-        }
-
-        .glow-card::before {
-            border: 1px solid transparent;
-            background:
-                linear-gradient(var(--card-bg, #120F17) 0 100%) padding-box,
-                linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
-                var(--gradient-one) border-box, var(--gradient-two) border-box,
-                var(--gradient-three) border-box, var(--gradient-four) border-box,
-                var(--gradient-five) border-box, var(--gradient-six) border-box,
-                var(--gradient-seven) border-box, var(--gradient-base) border-box;
-
-            opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-            mask-image: conic-gradient(
-                from var(--cursor-angle) at center,
-                black calc(var(--cone-spread) * 1%),
-                transparent calc((var(--cone-spread) + 15) * 1%),
-                transparent calc((100 - var(--cone-spread) - 15) * 1%),
-                black calc((100 - var(--cone-spread)) * 1%)
-            );
-        }
-
-        .glow-card::after {
-            border: 1px solid transparent;
-            background:
-                var(--gradient-one) padding-box, var(--gradient-two) padding-box,
-                var(--gradient-three) padding-box, var(--gradient-four) padding-box,
-                var(--gradient-five) padding-box, var(--gradient-six) padding-box,
-                var(--gradient-seven) padding-box, var(--gradient-base) padding-box;
-
-            mask-image:
-                linear-gradient(to bottom, black, black),
-                radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
-                radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
-                radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
-                radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
-                radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
-                conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
-
-            mask-composite: subtract, add, add, add, add, add;
-            opacity: calc(var(--fill-opacity, 0.5) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-            mix-blend-mode: soft-light;
-        }
-
-        .glow-card > .edge-light {
-            inset: calc(var(--glow-padding) * -1);
-            pointer-events: none;
-            z-index: 1;
-            mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
-            opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
-            mix-blend-mode: plus-lighter;
-        }
-
-        .glow-card > .edge-light::before {
-            content: "";
-            position: absolute;
-            inset: var(--glow-padding);
-            border-radius: inherit;
-            box-shadow:
-                inset 0 0 0 1px var(--glow-color), inset 0 0 1px 0 var(--glow-color-60),
-                inset 0 0 3px 0 var(--glow-color-50), inset 0 0 6px 0 var(--glow-color-40),
-                inset 0 0 15px 0 var(--glow-color-30), inset 0 0 25px 2px var(--glow-color-20),
-                inset 0 0 50px 2px var(--glow-color-10), 0 0 1px 0 var(--glow-color-60),
-                0 0 3px 0 var(--glow-color-50), 0 0 6px 0 var(--glow-color-40),
-                0 0 15px 0 var(--glow-color-30), 0 0 25px 2px var(--glow-color-20),
-                0 0 50px 2px var(--glow-color-10);
-        }
-
-        .glow-inner {
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 2;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+#dashboardWorkspace { display: none; }
+/* Dashboard Components */
+header { border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end;}
+header h1 { margin: 0; font-size: 28px; }
+header p { margin: 5px 0 0 0; color: var(--text-muted); }
+.logout-btn { background: none; border: 1px solid var(--accent-red); color: var(--accent-red); padding: 5px 15px; border-radius: 4px; cursor: pointer; }
+.btn-group { display: flex; gap: 15px; }
+.btn { color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
+#startScannerBtn { background-color: var(--accent-green); }
+.status-text, .logs-box, .status-value {
+  color: var(--text-muted); font-size: 14px; margin-top: 15px; font-family: 'JetBrains Mono';
+  background: rgba(7, 10, 18, 0.7); padding: 10px; border-radius: 4px; border-left: 3px solid var(--accent-blue); margin-bottom: 0;
+}
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 15px; }
+.card h2 { margin-top: 0; font-size: 16px; text-transform: uppercase; color: var(--text-muted); }
+.status-value { font-size: 24px; font-weight: bold; margin: 10px 0; }
+.state-waiting { color: #eab308; }
+.state-found { color: var(--accent-green); }
+/* DB Timeline Box */
+.logs-box {
+  background-color: rgba(7, 10, 18, 0.6); border: 1px solid var(--border-color);
+  border-radius: 8px; padding: 15px; font-family: 'JetBrains Mono';
+  height: 150px; overflow-y: auto; color: #34d399;
+}
+.log-entry { margin-bottom: 8px; border-bottom: 1px solid rgba(31, 41, 55, 0.5); padding-bottom: 5px; }
+.log-time { color: var(--text-muted); margin-right: 10px; }
+/* Auth Form Overrides */
+.auth-card h2 { margin-top: 0; text-align: center; }
+.auth-card p.subtitle { color: var(--text-muted); text-align: center; font-size: 14px; margin-bottom: 25px; }
+.input-group { margin-bottom: 20px; }
+.input-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 13px; text-transform: uppercase; }
+.input-group input {
+  width: 100%; padding: 12px; background: rgba(7, 10, 18, 0.6); border: 1px solid var(--border-color);
+  border-radius: 6px; color: white; font-size: 14px; box-sizing: border-box;
+}
+.auth-btn {
+  width: 100%; background: var(--accent-blue); color: white; border: none;
+  padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px;
+}
+.auth-btn:hover { background: #2563eb; }
+/* =========================================
+   BORDER GLOW CSS (Converted from React Bits)
+========================================= */
+.glow-card {
+  --edge-proximity: 0;
+  --cursor-angle: 45deg;
+  --edge-sensitivity: 30;
+  --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+  --border-radius: 12px;
+  --glow-padding: 40px;
+  --cone-spread: 25;
+  position: relative;
+  border-radius: var(--border-radius);
+  isolation: isolate;
+  transform: translate3d(0, 0, 0.01px);
+  display: grid;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--card-bg, #120F17);
+  overflow: visible;
+  padding: 15px; /* Base padding for cards */
+}
+.auth-card.glow-card { padding: 40px; width: 100%; max-width: 400px; margin: 0 auto; }
+.setup-console.glow-card { margin-bottom: 30px; }
+.glow-card::before,
+.glow-card::after,
+.glow-card > .edge-light {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: opacity 0.25s ease-out;
+  z-index: -1;
+}
+.glow-card:not(:hover):not(.sweep-active)::before,
+.glow-card:not(:hover):not(.sweep-active)::after,
+.glow-card:not(:hover):not(.sweep-active) > .edge-light {
+  opacity: 0;
+  transition: opacity 0.75s ease-in-out;
+}
+.glow-card::before {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--card-bg, #120F17) 0 100%) padding-box,
+    linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+    var(--gradient-one) border-box, var(--gradient-two) border-box,
+    var(--gradient-three) border-box, var(--gradient-four) border-box,
+    var(--gradient-five) border-box, var(--gradient-six) border-box,
+    var(--gradient-seven) border-box, var(--gradient-base) border-box;
+  opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  mask-image: conic-gradient(
+    from var(--cursor-angle) at center,
+    black calc(var(--cone-spread) * 1%),
+    transparent calc((var(--cone-spread) + 15) * 1%),
+    transparent calc((100 - var(--cone-spread) - 15) * 1%),
+    black calc((100 - var(--cone-spread)) * 1%)
+  );
+}
+.glow-card::after {
+  border: 1px solid transparent;
+  background:
+    var(--gradient-one) padding-box, var(--gradient-two) padding-box,
+    var(--gradient-three) padding-box, var(--gradient-four) padding-box,
+    var(--gradient-five) padding-box, var(--gradient-six) padding-box,
+    var(--gradient-seven) padding-box, var(--gradient-base) padding-box;
+  mask-image:
+    linear-gradient(to bottom, black, black),
+    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+    conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+  mask-composite: subtract, add, add, add, add, add;
+  opacity: calc(var(--fill-opacity, 0.5) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  mix-blend-mode: soft-light;
+}
+.glow-card > .edge-light {
+  inset: calc(var(--glow-padding) * -1);
+  pointer-events: none;
+  z-index: 1;
+  mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
+  opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+  mix-blend-mode: plus-lighter;
+}
+.glow-card > .edge-light::before {
+  content: "";
+  position: absolute;
+  inset: var(--glow-padding);
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--glow-color), inset 0 0 1px 0 var(--glow-color-60),
+    inset 0 0 3px 0 var(--glow-color-50), inset 0 0 6px 0 var(--glow-color-40),
+    inset 0 0 15px 0 var(--glow-color-30), inset 0 0 25px 2px var(--glow-color-20),
+    inset 0 0 50px 2px var(--glow-color-10), 0 0 1px 0 var(--glow-color-60),
+    0 0 3px 0 var(--glow-color-50), 0 0 6px 0 var(--glow-color-40),
+    0 0 15px 0 var(--glow-color-30), 0 0 25px 2px var(--glow-color-20),
+    0 0 50px 2px var(--glow-color-10);
+}
+.glow-inner {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.9/dist/face-api.js"></script>
+<script>
+  // face-api's bundled TensorFlow instance is exposed as faceapi.tf.
+  // Pointing window.tf at it BEFORE loading coco-ssd makes coco-ssd reuse
+  // that same engine instead of registering a second, conflicting one.
+  window.tf = faceapi.tf;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
 </head>
 <body>
-    <div id="lightfall-bg"></div>
-    
-    <div style="max-width: 700px; margin: 0 auto 20px auto; background: rgba(59,130,246,0.12); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 14px 18px; color: var(--text-main); font-size: 14px;">
-        🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real face recognition</strong> in your browser, matching your live camera feed against our enrolled operator photo. Instrument detection here is a labeled preview overlay; our production system uses a custom-trained YOLOv8 model + dlib running locally for real-time surgical instrument detection and identity verification. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
-    </div>
+<div id="lightfall-bg"></div>
 
+<div style="max-width: 700px; margin: 0 auto 20px auto; background: rgba(59,130,246,0.12); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 14px 18px; color: var(--text-main); font-size: 14px;">
+🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real face recognition</strong> and <strong>real object detection</strong> in your browser (matching your live camera feed against our enrolled operator photo, and running live object detection for tracked items). On this browser build, everyday stand-in objects (phone, bottle) are used as proxies and labeled as "Surgical Instrument" for the demo; our production system uses a custom-trained YOLOv8 model + dlib running locally against real surgical instruments. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
+</div>
 
+<div id="authGate" class="auth-card glow-card">
+<span class="edge-light"></span>
+<div class="glow-inner">
+<h2>Cortex Track Asset Verification System (AVS)</h2>
+<p class="subtitle">Secure Identity Verification for Tracked Assets</p>
+<div class="input-group">
+<label>Username</label>
+<input type="text" id="usernameInput" placeholder="demo">
+</div>
+<div class="input-group">
+<label>Password</label>
+<input type="password" id="passwordInput" placeholder="demo">
+</div>
+<button class="auth-btn" onclick="handleAuthSubmit()">Authenticate Session (Demo)</button>
+<p id="authMsg" style="margin-top: 15px; font-weight: bold; text-align: center; display: none;"></p>
+</div>
+</div>
 
+<div id="dashboardWorkspace" class="container">
+<header>
+<div>
+<h1>Cortex Track Asset Verification System (AVS)</h1>
+<p>Welcome, <span id="profileUser" style="color: var(--accent-blue); font-weight: bold;">User</span> | Live Asset Log Stream Active</p>
+</div>
+<button class="logout-btn" onclick="logout()">End Session</button>
+</header>
 
+<div class="setup-console glow-card">
+<span class="edge-light"></span>
+<div class="glow-inner">
+<h3>Camera Control Panel</h3>
+<div class="btn-group">
+<button id="startScannerBtn" class="btn" onclick="startScanner()">Initialize Vision Thread</button>
+</div>
+<p id="setupStatus" class="status-text">System Pipeline: DORMANT. Secure token verified.</p>
+<div id="camWrap" style="display:none; margin-top:15px; position:relative; width:100%; max-width:640px; border-radius:8px; overflow:hidden; border:1px solid var(--border-color);">
+<video id="camFeed" autoplay playsinline muted style="width:100%; display:block; background:#000;"></video>
+<canvas id="camOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
+<div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:#34d399; font-size:11px; padding:3px 8px; border-radius:4px; font-family:'JetBrains Mono';">● LIVE CAM — real face + object detection (phone/bottle = instrument stand-ins)</div>
+</div>
+<p id="camError" style="display:none; color:var(--accent-red); font-size:13px; margin-top:8px;"></p>
+</div>
+</div>
 
-    <div id="authGate" class="auth-card glow-card">
-        <span class="edge-light"></span>
-        <div class="glow-inner">
-            <h2>Cortex Track Asset Verification System (AVS)</h2>
-            <p class="subtitle">Secure Identity Verification for Tracked Assets</p>
-            
-            <div class="input-group">
-                <label>Username</label>
-                <input type="text" id="usernameInput" placeholder="demo">
-            </div>
-            
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="passwordInput" placeholder="demo">
-            </div>
-            
-            <button class="auth-btn" onclick="handleAuthSubmit()">Authenticate Session (Demo)</button>
-            <p id="authMsg" style="margin-top: 15px; font-weight: bold; text-align: center; display: none;"></p>
-        </div>
-    </div>
+<div class="grid">
+<div class="card glow-card" id="cardItemA">
+<span class="edge-light"></span>
+<div class="glow-inner">
+<h2>Tracking Zone / Item A</h2>
+<div class="status-value">Tracking Matrix</div>
+<p>Status: <span id="statusItemA" class="state-waiting">WAITING</span></p>
+</div>
+</div>
+<div class="card glow-card" id="cardItemB">
+<span class="edge-light"></span>
+<div class="glow-inner">
+<h2>Tracking Zone / Item B</h2>
+<div class="status-value">Tracking Matrix</div>
+<p>Status: <span id="statusItemB" class="state-waiting">WAITING</span></p>
+</div>
+</div>
+<div class="card glow-card">
+<span class="edge-light"></span>
+<div class="glow-inner">
+<h2>Active Operator Verification</h2>
+<div class="status-value" id="operatorName" style="color: #60a5fa;">Awaiting Scan...</div>
+<p>System Security: <span style="color: var(--accent-green);">Hashed Credentials</span></p>
+</div>
+</div>
+</div>
 
-    <div id="dashboardWorkspace" class="container">
-        <header>
-            <div>
-                <h1>Cortex Track Asset Verification System (AVS)</h1>
-                <p>Welcome, <span id="profileUser" style="color: var(--accent-blue); font-weight: bold;">User</span> | Live Asset Log Stream Active</p>
-            </div>
-            <button class="logout-btn" onclick="logout()">End Session</button>
-        </header>
+<div class="card glow-card" style="width: 100%; box-sizing: border-box;">
+<span class="edge-light"></span>
+<div class="glow-inner">
+<h2>Live Asset Activity Timeline (SQLite)</h2>
+<div id="complianceLog" class="logs-box">Awaiting connection to SQLite history table...</div>
+</div>
+</div>
 
-        <div class="setup-console glow-card">
-            <span class="edge-light"></span>
-            <div class="glow-inner">
-                <h3>Camera Control Panel</h3>
-                <div class="btn-group">
-                    <button id="startScannerBtn" class="btn" onclick="startScanner()">Initialize Vision Thread</button>
-                </div>
-                <p id="setupStatus" class="status-text">System Pipeline: DORMANT. Secure token verified.</p>
-                <div id="camWrap" style="display:none; margin-top:15px; position:relative; width:100%; max-width:640px; border-radius:8px; overflow:hidden; border:1px solid var(--border-color);">
-                    <video id="camFeed" autoplay playsinline muted style="width:100%; display:block; background:#000;"></video>
-                    <canvas id="camOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%;"></canvas>
-                    <div style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.6); color:#34d399; font-size:11px; padding:3px 8px; border-radius:4px; font-family:'JetBrains Mono';">● LIVE CAM — detection overlay simulated (real YOLOv8/dlib run locally)</div>
-                </div>
-                <p id="camError" style="display:none; color:var(--accent-red); font-size:13px; margin-top:8px;"></p>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="card glow-card" id="cardItemA">
-                <span class="edge-light"></span>
-
-                <div class="glow-inner">
-                    <h2>Tracking Zone / Item A</h2>
-                    <div class="status-value">Tracking Matrix</div>
-                    <p>Status: <span id="statusItemA" class="state-waiting">WAITING</span></p>
-                </div>
-            </div>
-            <div class="card glow-card" id="cardItemB">
-                <span class="edge-light"></span>
-                <div class="glow-inner">
-                    <h2>Tracking Zone / Item B</h2>
-                    <div class="status-value">Tracking Matrix</div>
-                    <p>Status: <span id="statusItemB" class="state-waiting">WAITING</span></p>
-                </div>
-            </div>
-            <div class="card glow-card">
-                <span class="edge-light"></span>
-                <div class="glow-inner">
-                    <h2>Active Operator Verification</h2>
-                    <div class="status-value" id="operatorName" style="color: #60a5fa;">Awaiting Scan...</div>
-                    <p>System Security: <span style="color: var(--accent-green);">Hashed Credentials</span></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card glow-card" style="width: 100%; box-sizing: border-box;">
-            <span class="edge-light"></span>
-            <div class="glow-inner">
-                <h2>Live Asset Activity Timeline (SQLite)</h2>
-                <div id="complianceLog" class="logs-box">Awaiting connection to SQLite history table...</div>
-            </div>
-        </div>
-    </div>
+</div>
 
 <script>
-    let telemetryInterval;
+let telemetryInterval;
 
-    // Initialize BorderGlow on vanilla DOM
-    function initBorderGlow() {
-        const cards = document.querySelectorAll('.glow-card');
-        
-        // Colors from Cortex Track Palette (Blue, Green, Red)
-        const glowColor = '217 91 60'; // HSL for #3b82f6
-        const themeColors = ['#3b82f6', '#10b981', '#ef4444'];
-        
-        const parseHSL = (hslStr) => {
-            const match = hslStr.match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
-            if (!match) return { h: 40, s: 80, l: 80 };
-            return { h: parseFloat(match[1]), s: parseFloat(match[2]), l: parseFloat(match[3]) };
-        };
+// Initialize BorderGlow on vanilla DOM
+function initBorderGlow() {
+  const cards = document.querySelectorAll('.glow-card');
+  // Colors from Cortex Track Palette (Blue, Green, Red)
+  const glowColor = '217 91 60'; // HSL for #3b82f6
+  const themeColors = ['#3b82f6', '#10b981', '#ef4444'];
 
-        const buildGlowVars = (color, intensity) => {
-            const { h, s, l } = parseHSL(color);
-            const base = `${h}deg ${s}% ${l}%`;
-            const opacities = [100, 60, 50, 40, 30, 20, 10];
-            const keys = ['', '-60', '-50', '-40', '-30', '-20', '-10'];
-            const vars = {};
-            opacities.forEach((op, i) => {
-                vars[`--glow-color${keys[i]}`] = `hsl(${base} / ${Math.min(op * intensity, 100)}%)`;
-            });
-            return vars;
-        };
+  const parseHSL = (hslStr) => {
+    const match = hslStr.match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
+    if (!match) return { h: 40, s: 80, l: 80 };
+    return { h: parseFloat(match[1]), s: parseFloat(match[2]), l: parseFloat(match[3]) };
+  };
 
-        const GRADIENT_POSITIONS = ['80% 55%', '69% 34%', '8% 6%', '41% 38%', '86% 85%', '82% 18%', '51% 4%'];
-        const GRADIENT_KEYS = ['--gradient-one', '--gradient-two', '--gradient-three', '--gradient-four', '--gradient-five', '--gradient-six', '--gradient-seven'];
-        const COLOR_MAP = [0, 1, 2, 0, 1, 2, 1];
+  const buildGlowVars = (color, intensity) => {
+    const { h, s, l } = parseHSL(color);
+    const base = `${h}deg ${s}% ${l}%`;
+    const opacities = [100, 60, 50, 40, 30, 20, 10];
+    const keys = ['', '-60', '-50', '-40', '-30', '-20', '-10'];
+    const vars = {};
+    opacities.forEach((op, i) => {
+      vars[`--glow-color${keys[i]}`] = `hsl(${base} / ${Math.min(op * intensity, 100)}%)`;
+    });
+    return vars;
+  };
 
-        const buildGradientVars = (colors) => {
-            const vars = {};
-            for (let i = 0; i < 7; i++) {
-                const c = colors[Math.min(COLOR_MAP[i], colors.length - 1)];
-                vars[GRADIENT_KEYS[i]] = `radial-gradient(at ${GRADIENT_POSITIONS[i]}, ${c} 0px, transparent 50%)`;
-            }
-            vars['--gradient-base'] = `linear-gradient(${colors[0]} 0 100%)`;
-            return vars;
-        };
+  const GRADIENT_POSITIONS = ['80% 55%', '69% 34%', '8% 6%', '41% 38%', '86% 85%', '82% 18%', '51% 4%'];
+  const GRADIENT_KEYS = ['--gradient-one', '--gradient-two', '--gradient-three', '--gradient-four', '--gradient-five', '--gradient-six', '--gradient-seven'];
+  const COLOR_MAP = [0, 1, 2, 0, 1, 2, 1];
 
-        const glowVars = buildGlowVars(glowColor, 1.0);
-        const gradientVars = buildGradientVars(themeColors);
-
-        const getCenter = (el) => {
-            const rect = el.getBoundingClientRect();
-            return [rect.width / 2, rect.height / 2];
-        };
-
-        const getEdgeProximity = (el, x, y) => {
-            const [cx, cy] = getCenter(el);
-            const dx = x - cx, dy = y - cy;
-            let kx = Infinity, ky = Infinity;
-            if (dx !== 0) kx = cx / Math.abs(dx);
-            if (dy !== 0) ky = cy / Math.abs(dy);
-            return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
-        };
-
-        const getCursorAngle = (el, x, y) => {
-            const [cx, cy] = getCenter(el);
-            const dx = x - cx, dy = y - cy;
-            if (dx === 0 && dy === 0) return 0;
-            let degrees = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-            if (degrees < 0) degrees += 360;
-            return degrees;
-        };
-
-        cards.forEach(card => {
-            // Inject variables
-            Object.entries(glowVars).forEach(([k, v]) => card.style.setProperty(k, v));
-            Object.entries(gradientVars).forEach(([k, v]) => card.style.setProperty(k, v));
-            card.style.setProperty('--card-bg', 'var(--card-bg-glass)');
-            card.style.setProperty('--fill-opacity', '0.4');
-
-            // Track Pointer
-            card.addEventListener('pointermove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                const edge = getEdgeProximity(card, x, y);
-                const angle = getCursorAngle(card, x, y);
-
-                card.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
-                card.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
-            });
-        });
+  const buildGradientVars = (colors) => {
+    const vars = {};
+    for (let i = 0; i < 7; i++) {
+      const c = colors[Math.min(COLOR_MAP[i], colors.length - 1)];
+      vars[GRADIENT_KEYS[i]] = `radial-gradient(at ${GRADIENT_POSITIONS[i]}, ${c} 0px, transparent 50%)`;
     }
+    vars['--gradient-base'] = `linear-gradient(${colors[0]} 0 100%)`;
+    return vars;
+  };
 
-    window.onload = () => {
-        initBorderGlow(); // Start WebGL Glow Tracking
+  const glowVars = buildGlowVars(glowColor, 1.0);
+  const gradientVars = buildGradientVars(themeColors);
 
-        if(localStorage.getItem("rsi_token")) {
-            document.getElementById("authGate").style.display = "none";
-            document.getElementById("dashboardWorkspace").style.display = "block";
-            document.getElementById("profileUser").innerText = localStorage.getItem("rsi_user").toUpperCase();
-            startTelemetryLoop();
+  const getCenter = (el) => {
+    const rect = el.getBoundingClientRect();
+    return [rect.width / 2, rect.height / 2];
+  };
+
+  const getEdgeProximity = (el, x, y) => {
+    const [cx, cy] = getCenter(el);
+    const dx = x - cx, dy = y - cy;
+    let kx = Infinity, ky = Infinity;
+    if (dx !== 0) kx = cx / Math.abs(dx);
+    if (dy !== 0) ky = cy / Math.abs(dy);
+    return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+  };
+
+  const getCursorAngle = (el, x, y) => {
+    const [cx, cy] = getCenter(el);
+    const dx = x - cx, dy = y - cy;
+    if (dx === 0 && dy === 0) return 0;
+    let degrees = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+    if (degrees < 0) degrees += 360;
+    return degrees;
+  };
+
+  cards.forEach(card => {
+    // Inject variables
+    Object.entries(glowVars).forEach(([k, v]) => card.style.setProperty(k, v));
+    Object.entries(gradientVars).forEach(([k, v]) => card.style.setProperty(k, v));
+    card.style.setProperty('--card-bg', 'var(--card-bg-glass)');
+    card.style.setProperty('--fill-opacity', '0.4');
+
+    // Track Pointer
+    card.addEventListener('pointermove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const edge = getEdgeProximity(card, x, y);
+      const angle = getCursorAngle(card, x, y);
+      card.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
+      card.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
+    });
+  });
+}
+
+window.onload = () => {
+  initBorderGlow(); // Start WebGL Glow Tracking
+  if(localStorage.getItem("rsi_token")) {
+    document.getElementById("authGate").style.display = "none";
+    document.getElementById("dashboardWorkspace").style.display = "block";
+    document.getElementById("profileUser").innerText = localStorage.getItem("rsi_user").toUpperCase();
+    startTelemetryLoop();
+  }
+};
+
+function handleAuthSubmit() {
+  const u = document.getElementById("usernameInput").value.trim();
+  const msg = document.getElementById("authMsg");
+
+  // DEMO MODE: no real backend on this hosted page — simulate a successful login
+  setTimeout(() => {
+    msg.style.display = "block";
+    const username = u || "demo_user";
+    localStorage.setItem("rsi_token", "demo-token");
+    localStorage.setItem("rsi_user", username);
+    document.getElementById("authGate").style.display = "none";
+    document.getElementById("dashboardWorkspace").style.display = "block";
+    document.getElementById("profileUser").innerText = username.toUpperCase();
+    startTelemetryLoop();
+  }, 400);
+}
+
+function logout() {
+  localStorage.removeItem("rsi_token");
+  localStorage.removeItem("rsi_user");
+  clearInterval(telemetryInterval);
+  location.reload();
+}
+
+function startScanner() {
+  const btn = document.getElementById("startScannerBtn");
+  const camWrap = document.getElementById("camWrap");
+  const camError = document.getElementById("camError");
+  const video = document.getElementById("camFeed");
+  const canvas = document.getElementById("camOverlay");
+
+  btn.disabled = true;
+  btn.innerText = "Requesting camera access...";
+
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+      camWrap.style.display = "block";
+      btn.innerText = "Loading AI models...";
+
+      video.onloadedmetadata = async () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        try {
+          const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights';
+          await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+          ]);
+
+          btn.innerText = "Loading enrolled operator photo...";
+          const REF_IMG_URL = 'https://raw.githubusercontent.com/chmanishreddy775/cortex-track-avs/main/Navaneeth.jpg';
+          const refImg = await faceapi.fetchImage(REF_IMG_URL);
+          const refResult = await faceapi.detectSingleFace(refImg, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks().withFaceDescriptor();
+
+          if (!refResult) {
+            throw new Error("No face found in enrolled reference photo.");
+          }
+
+          const faceMatcher = new faceapi.FaceMatcher(refResult, 0.55);
+
+          btn.innerText = "Loading instrument detection model...";
+          const cocoModel = await cocoSsd.load();
+
+          btn.innerText = "Vision Thread Active (Live Detection)";
+          btn.style.backgroundColor = "var(--border-color)";
+          btn.style.cursor = "not-allowed";
+
+          runLiveDetection(video, canvas, faceMatcher, cocoModel);
+        } catch (e) {
+          camError.style.display = "block";
+          camError.innerText = "⚠️ Setup failed: " + e.message + " — check internet connection and that Navaneeth.jpg is on the main branch.";
+          btn.disabled = false;
+          btn.innerText = "Initialize Vision Thread";
         }
-    };
+      };
+    })
+    .catch(err => {
+      camError.style.display = "block";
+      camError.innerText = "⚠️ Camera access denied or unavailable: " + err.message + " — the real deployment uses OpenCV directly with a local Python process, which has more reliable camera access than a browser sandbox.";
+      btn.disabled = false;
+      btn.innerText = "Initialize Vision Thread";
+    });
+}
 
-    function handleAuthSubmit() {
-        const u = document.getElementById("usernameInput").value.trim();
-        const msg = document.getElementById("authMsg");
+// Object classes relevant to the demo — coco-ssd's stock labels, remapped to instrument names
+const RELEVANT_CLASSES = {
+  "cell phone": "Surgical Instrument (Scanner)",
+  "bottle": "Surgical Instrument (Vial)",
+  "scissors": "Surgical Instrument (Scissors)"
+};
 
-        // DEMO MODE: no real backend on this hosted page — simulate a successful login
-        setTimeout(() => {
-            msg.style.display = "block";
-            const username = u || "demo_user";
-            localStorage.setItem("rsi_token", "demo-token");
-            localStorage.setItem("rsi_user", username);
+async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
+  const ctx = canvas.getContext("2d");
+  const statusText = document.getElementById("setupStatus");
+  const txtA = document.getElementById("statusItemA");
+  const operatorEl = document.getElementById("operatorName");
+  const logBox = document.getElementById("complianceLog");
+  const demoHistory = [];
+  let lastLogTime = 0;
+  let frameCount = 0;
+  let lastInstrumentBoxes = []; // cached between throttled coco-ssd passes
 
-            document.getElementById("authGate").style.display = "none";
-            document.getElementById("dashboardWorkspace").style.display = "block";
-            document.getElementById("profileUser").innerText = username.toUpperCase();
-            startTelemetryLoop();
-        }, 400);
+  const pushLog = (text) => {
+    demoHistory.unshift({ time: new Date().toISOString(), log: text });
+    if (demoHistory.length > 5) demoHistory.pop();
+    logBox.innerHTML = demoHistory.map(entry => {
+      const time = new Date(entry.time).toLocaleTimeString();
+      const color = entry.log.includes("BREACH") ? "var(--accent-red)" : "#34d399";
+      return `<div class="log-entry" style="color: ${color}"><span class="log-time">[${time}]</span>${entry.log}</div>`;
+    }).join("");
+  };
+
+  async function detectLoop() {
+    if (!video.srcObject) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Real face detection + identity match against enrolled reference photo
+    const faceResults = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+      .withFaceLandmarks().withFaceDescriptors();
+
+    let verifiedFound = false;
+    faceResults.forEach(fr => {
+      const match = faceMatcher.findBestMatch(fr.descriptor);
+      const isVerified = match.label !== "unknown";
+      const box = fr.detection.box;
+
+      ctx.strokeStyle = isVerified ? "#3b82f6" : "#ef4444";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(box.x, box.y, box.width, box.height);
+      ctx.fillStyle = isVerified ? "#3b82f6" : "#ef4444";
+      ctx.font = "14px monospace";
+      ctx.fillText(isVerified ? "Verified Operator" : "Unknown Person", box.x, box.y - 6);
+
+      if (isVerified) verifiedFound = true;
+    });
+
+    // Real object detection (coco-ssd), throttled to every 4th frame — it's
+    // heavier than face detection and doesn't need to run every frame to feel live.
+    frameCount++;
+    if (frameCount % 4 === 0) {
+      const predictions = await cocoModel.detect(video);
+      lastInstrumentBoxes = predictions.filter(p => RELEVANT_CLASSES[p.class] && p.score > 0.5);
     }
 
-    function logout() {
-        localStorage.removeItem("rsi_token");
-        localStorage.removeItem("rsi_user");
-        clearInterval(telemetryInterval);
-        location.reload();
+    let itemLocked = lastInstrumentBoxes.length > 0;
+    lastInstrumentBoxes.forEach(pred => {
+      const [x, y, w, h] = pred.bbox;
+      const label = RELEVANT_CLASSES[pred.class];
+      ctx.strokeStyle = "#10b981";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x, y, w, h);
+      ctx.fillStyle = "#10b981";
+      ctx.font = "14px monospace";
+      ctx.fillText(`${label} — FOUND (${Math.round(pred.score * 100)}%)`, x, y - 6);
+    });
+
+    txtA.innerText = itemLocked ? "FOUND" : "WAITING";
+    txtA.className = "state-" + (itemLocked ? "found" : "waiting");
+    operatorEl.innerText = verifiedFound ? "VERIFIED OPERATOR" : (faceResults.length > 0 ? "UNKNOWN PERSON" : "Awaiting Scan...");
+    statusText.innerText = `System Pipeline: ACTIVE. Real face match: ${faceResults.length} face(s) checked. Instruments detected: ${lastInstrumentBoxes.length}.`;
+    statusText.style.color = "var(--accent-green)";
+
+    const now = Date.now();
+    if (now - lastLogTime > 3000) {
+      const instrumentNames = lastInstrumentBoxes.map(p => RELEVANT_CLASSES[p.class]).join(", ") || "none";
+      pushLog(`Live: ${verifiedFound ? "verified operator matched" : "no verified operator"}, instrument(s): ${instrumentNames}.`);
+      lastLogTime = now;
     }
 
-    function startScanner() {
-        const btn = document.getElementById("startScannerBtn");
-        const camWrap = document.getElementById("camWrap");
-        const camError = document.getElementById("camError");
-        const video = document.getElementById("camFeed");
-        const canvas = document.getElementById("camOverlay");
+    requestAnimationFrame(detectLoop);
+  }
 
-        btn.disabled = true;
-        btn.innerText = "Requesting camera access...";
+  detectLoop();
+}
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                camWrap.style.display = "block";
-                btn.innerText = "Loading AI models...";
+function startTelemetryLoop() {
+  const mainWorkspace = document.getElementById("dashboardWorkspace");
+  const statusText = document.getElementById("setupStatus");
+  const logBox = document.getElementById("complianceLog");
+  const operatorEl = document.getElementById("operatorName");
+  const txtA = document.getElementById("statusItemA");
+  const txtB = document.getElementById("statusItemB");
 
-                video.onloadedmetadata = async () => {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    try {
-                        const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights';
-                        await Promise.all([
-                            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-                        ]);
+  // DEMO MODE: no real backend on this hosted page — simulate live telemetry
+  const demoHistory = [];
+  let tick = 0;
+  const operatorName = (localStorage.getItem("rsi_user") || "DR. MANI").toUpperCase();
 
-                        btn.innerText = "Loading enrolled operator photo...";
-                        const REF_IMG_URL = 'https://raw.githubusercontent.com/chmanishreddy775/cortex-track-avs/main/Navaneeth.jpg';
-                        const refImg = await faceapi.fetchImage(REF_IMG_URL);
-                        const refResult = await faceapi.detectSingleFace(refImg, new faceapi.TinyFaceDetectorOptions())
-                            .withFaceLandmarks().withFaceDescriptor();
+  const pushLog = (text, isBreach) => {
+    demoHistory.unshift({ time: new Date().toISOString(), log: text });
+    if (demoHistory.length > 5) demoHistory.pop();
+    logBox.innerHTML = demoHistory.map(entry => {
+      const time = new Date(entry.time).toLocaleTimeString();
+      const color = entry.log.includes("BREACH") ? "var(--accent-red)" : "#34d399";
+      return `<div class="log-entry" style="color: ${color}">
+                <span class="log-time">[${time}]</span>${entry.log}
+              </div>`;
+    }).join("");
+  };
 
-                        if (!refResult) {
-                            throw new Error("No face found in enrolled reference photo.");
-                        }
-                        const faceMatcher = new faceapi.FaceMatcher(refResult, 0.55);
+  pushLog(`Face-ID verified operator at terminal.`, false);
+  operatorEl.innerText = operatorName;
 
-                        btn.innerText = "Vision Thread Active (Live Detection)";
-                        btn.style.backgroundColor = "var(--border-color)";
-                        btn.style.cursor = "not-allowed";
-                        runLiveDetection(video, canvas, faceMatcher);
-                    } catch (e) {
-                        camError.style.display = "block";
-                        camError.innerText = "⚠️ Setup failed: " + e.message + " — check internet connection and that Navaneeth.jpg is on the main branch.";
-                        btn.disabled = false;
-                        btn.innerText = "Initialize Vision Thread";
-                    }
-                };
-            })
-            .catch(err => {
-                camError.style.display = "block";
-                camError.innerText = "⚠️ Camera access denied or unavailable: " + err.message + " — the real deployment uses OpenCV directly with a local Python process, which has more reliable camera access than a browser sandbox.";
-                btn.disabled = false;
-                btn.innerText = "Initialize Vision Thread";
-            });
+  telemetryInterval = setInterval(() => {
+    tick++;
+    // Simulate mostly-stable state with an occasional simulated breach for realism
+    const simulateBreach = (tick % 12 === 6);
+    const stateA = simulateBreach ? "WAITING" : "FOUND";
+    const stateB = simulateBreach ? "FOUND" : "FOUND";
+
+    txtA.innerText = stateA;
+    txtA.className = "state-" + stateA.toLowerCase();
+    txtB.innerText = stateB;
+    txtB.className = "state-" + stateB.toLowerCase();
+
+    if (simulateBreach) {
+      pushLog(`🚨 BREACH (simulated): Missing tracked item! Operator: ${operatorName}`, true);
+      mainWorkspace.classList.remove("active-camera-stream");
+      mainWorkspace.style.borderColor = "var(--accent-red)";
+      mainWorkspace.style.boxShadow = "0 0 25px rgba(239, 68, 68, 0.25)";
+      statusText.innerText = "🚨 ALERT: Tracked Item Missing from Zone! (simulated)";
+      statusText.style.color = "var(--accent-red)";
+    } else {
+      mainWorkspace.classList.add("active-camera-stream");
+      mainWorkspace.style.borderColor = "var(--accent-green)";
+      mainWorkspace.style.boxShadow = "0 0 25px rgba(16, 185, 129, 0.25)";
+      statusText.innerText = "System Pipeline: ACTIVE & STABLE. Logging frames to DB. (simulated)";
+      statusText.style.color = "var(--accent-green)";
     }
-
-    // Object classes relevant to the demo
-    const RELEVANT_CLASSES = ["cell phone", "bottle", "scissors"];
-
-    async function runLiveDetection(video, canvas, faceMatcher) {
-        const ctx = canvas.getContext("2d");
-        const statusText = document.getElementById("setupStatus");
-        const txtA = document.getElementById("statusItemA");
-        const operatorEl = document.getElementById("operatorName");
-        const logBox = document.getElementById("complianceLog");
-        const demoHistory = [];
-        let lastLogTime = 0;
-        let scanStart = performance.now();
-        const itemBox = { x: canvas.width * 0.12, y: canvas.height * 0.6, w: canvas.width * 0.22, h: canvas.height * 0.18 };
-
-        const pushLog = (text) => {
-            demoHistory.unshift({ time: new Date().toISOString(), log: text });
-            if (demoHistory.length > 5) demoHistory.pop();
-            logBox.innerHTML = demoHistory.map(entry => {
-                const time = new Date(entry.time).toLocaleTimeString();
-                const color = entry.log.includes("BREACH") ? "var(--accent-red)" : "#34d399";
-                return `<div class="log-entry" style="color: ${color}"><span class="log-time">[${time}]</span>${entry.log}</div>`;
-            }).join("");
-        };
-
-        async function detectLoop() {
-            if (!video.srcObject) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Real face detection + identity match against enrolled reference photo
-            const faceResults = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-                .withFaceLandmarks().withFaceDescriptors();
-
-            let verifiedFound = false;
-            faceResults.forEach(fr => {
-                const match = faceMatcher.findBestMatch(fr.descriptor);
-                const isVerified = match.label !== "unknown";
-                const box = fr.detection.box;
-                ctx.strokeStyle = isVerified ? "#3b82f6" : "#ef4444";
-                ctx.lineWidth = 3;
-                ctx.strokeRect(box.x, box.y, box.width, box.height);
-                ctx.fillStyle = isVerified ? "#3b82f6" : "#ef4444";
-                ctx.font = "14px monospace";
-                ctx.fillText(isVerified ? "Verified Operator" : "Unknown Person", box.x, box.y - 6);
-                if (isVerified) verifiedFound = true;
-            });
-
-            // Simulated instrument overlay (labeled) — item detection stays local/Python-side for real accuracy
-            const elapsed = performance.now() - scanStart;
-            const itemLocked = elapsed > 1500;
-            if (itemLocked) {
-                ctx.strokeStyle = "#10b981";
-                ctx.lineWidth = 3;
-                ctx.strokeRect(itemBox.x, itemBox.y, itemBox.w, itemBox.h);
-                ctx.fillStyle = "#10b981";
-                ctx.font = "14px monospace";
-                ctx.fillText("Instrument — FOUND (preview overlay)", itemBox.x, itemBox.y - 6);
-            }
-
-            txtA.innerText = itemLocked ? "FOUND" : "WAITING";
-            txtA.className = "state-" + (itemLocked ? "found" : "waiting");
-            operatorEl.innerText = verifiedFound ? "VERIFIED OPERATOR" : (faceResults.length > 0 ? "UNKNOWN PERSON" : "Awaiting Scan...");
-            statusText.innerText = `System Pipeline: ACTIVE. Real face match: ${faceResults.length} face(s) checked.`;
-            statusText.style.color = "var(--accent-green)";
-
-            const now = Date.now();
-            if (now - lastLogTime > 3000) {
-                pushLog(`Live: ${verifiedFound ? "verified operator matched" : "no verified operator"}, instrument preview ${itemLocked ? "FOUND" : "WAITING"}.`);
-                lastLogTime = now;
-            }
-
-            requestAnimationFrame(detectLoop);
-        }
-        detectLoop();
-    }
-
-    function startTelemetryLoop() {
-        const mainWorkspace = document.getElementById("dashboardWorkspace");
-        const statusText = document.getElementById("setupStatus");
-        const logBox = document.getElementById("complianceLog");
-        const operatorEl = document.getElementById("operatorName");
-        const txtA = document.getElementById("statusItemA");
-        const txtB = document.getElementById("statusItemB");
-
-        // DEMO MODE: no real backend on this hosted page — simulate live telemetry
-        const demoHistory = [];
-        let tick = 0;
-        const operatorName = (localStorage.getItem("rsi_user") || "DR. MANI").toUpperCase();
-
-        const pushLog = (text, isBreach) => {
-            demoHistory.unshift({ time: new Date().toISOString(), log: text });
-            if (demoHistory.length > 5) demoHistory.pop();
-            logBox.innerHTML = demoHistory.map(entry => {
-                const time = new Date(entry.time).toLocaleTimeString();
-                const color = entry.log.includes("BREACH") ? "var(--accent-red)" : "#34d399";
-                return `<div class="log-entry" style="color: ${color}">
-                          <span class="log-time">[${time}]</span>${entry.log}
-                        </div>`;
-            }).join("");
-        };
-
-        pushLog(`Face-ID verified operator at terminal.`, false);
-        operatorEl.innerText = operatorName;
-
-        telemetryInterval = setInterval(() => {
-            tick++;
-            // Simulate mostly-stable state with an occasional simulated breach for realism
-            const simulateBreach = (tick % 12 === 6);
-
-            const stateA = simulateBreach ? "WAITING" : "FOUND";
-            const stateB = simulateBreach ? "FOUND" : "FOUND";
-            txtA.innerText = stateA;
-            txtA.className = "state-" + stateA.toLowerCase();
-            txtB.innerText = stateB;
-            txtB.className = "state-" + stateB.toLowerCase();
-
-            if (simulateBreach) {
-                pushLog(`🚨 BREACH (simulated): Missing tracked item! Operator: ${operatorName}`, true);
-                mainWorkspace.classList.remove("active-camera-stream");
-                mainWorkspace.style.borderColor = "var(--accent-red)";
-                mainWorkspace.style.boxShadow = "0 0 25px rgba(239, 68, 68, 0.25)";
-                statusText.innerText = "🚨 ALERT: Tracked Item Missing from Zone! (simulated)";
-                statusText.style.color = "var(--accent-red)";
-            } else {
-                mainWorkspace.classList.add("active-camera-stream");
-                mainWorkspace.style.borderColor = "var(--accent-green)";
-                mainWorkspace.style.boxShadow = "0 0 25px rgba(16, 185, 129, 0.25)";
-                statusText.innerText = "System Pipeline: ACTIVE & STABLE. Logging frames to DB. (simulated)";
-                statusText.style.color = "var(--accent-green)";
-            }
-        }, 2000);
-    }
+  }, 2000);
+}
 </script>
 
 <script type="module">
-    import { initLightfall } from './lightfall.js';
-    initLightfall('lightfall-bg');
+  import { initLightfall } from './lightfall.js';
+  initLightfall('lightfall-bg');
 </script>
 </body>
 </html>
