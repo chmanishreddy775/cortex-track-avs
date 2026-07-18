@@ -304,7 +304,7 @@ header p { margin: 5px 0 0 0; color: var(--text-muted); }
 <div class="card glow-card" id="cardItemB">
 <span class="edge-light"></span>
 <div class="glow-inner">
-<h2>Tracking Zone / Item B</h2>
+<h2>Tracking Zone / Item B (Bottle)</h2>
 <div class="status-value">Tracking Matrix</div>
 <p>Status: <span id="statusItemB" class="state-waiting">WAITING</span></p>
 </div>
@@ -498,6 +498,10 @@ function startScanner() {
           btn.style.backgroundColor = "var(--border-color)";
           btn.style.cursor = "not-allowed";
 
+          // Real camera detection now drives Item A / Item B — stop the simulated
+          // telemetry loop from overwriting those with fake data.
+          clearInterval(telemetryInterval);
+
           runLiveDetection(video, canvas, faceMatcher, cocoModel);
         } catch (e) {
           camError.style.display = "block";
@@ -515,23 +519,29 @@ function startScanner() {
     });
 }
 
-// Object classes relevant to the demo — coco-ssd's stock labels, remapped to instrument names
-const RELEVANT_CLASSES = {
+// Object classes relevant to the demo — coco-ssd's stock labels, remapped to instrument names.
+// Split across the two tracking zones: Zone A watches for phone/scissors stand-ins,
+// Zone B watches for bottle only.
+const ITEM_A_CLASSES = {
   "cell phone": "Surgical Instrument (Scanner)",
-  "bottle": "Surgical Instrument (Vial)",
   "scissors": "Surgical Instrument (Scissors)"
+};
+const ITEM_B_CLASSES = {
+  "bottle": "Surgical Instrument (Vial)"
 };
 
 async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
   const ctx = canvas.getContext("2d");
   const statusText = document.getElementById("setupStatus");
   const txtA = document.getElementById("statusItemA");
+  const txtB = document.getElementById("statusItemB");
   const operatorEl = document.getElementById("operatorName");
   const logBox = document.getElementById("complianceLog");
   const demoHistory = [];
   let lastLogTime = 0;
   let frameCount = 0;
-  let lastInstrumentBoxes = []; // cached between throttled coco-ssd passes
+  let lastItemABoxes = []; // cached between throttled coco-ssd passes
+  let lastItemBBoxes = [];
 
   const pushLog = (text) => {
     demoHistory.unshift({ time: new Date().toISOString(), log: text });
@@ -572,31 +582,41 @@ async function runLiveDetection(video, canvas, faceMatcher, cocoModel) {
     frameCount++;
     if (frameCount % 4 === 0) {
       const predictions = await cocoModel.detect(video);
-      lastInstrumentBoxes = predictions.filter(p => RELEVANT_CLASSES[p.class] && p.score > 0.5);
+      lastItemABoxes = predictions.filter(p => ITEM_A_CLASSES[p.class] && p.score > 0.5);
+      lastItemBBoxes = predictions.filter(p => ITEM_B_CLASSES[p.class] && p.score > 0.5);
     }
 
-    let itemLocked = lastInstrumentBoxes.length > 0;
-    lastInstrumentBoxes.forEach(pred => {
-      const [x, y, w, h] = pred.bbox;
-      const label = RELEVANT_CLASSES[pred.class];
-      ctx.strokeStyle = "#10b981";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x, y, w, h);
-      ctx.fillStyle = "#10b981";
-      ctx.font = "14px monospace";
-      ctx.fillText(`${label} — FOUND (${Math.round(pred.score * 100)}%)`, x, y - 6);
-    });
+    const drawBoxes = (boxes, classMap, color) => {
+      boxes.forEach(pred => {
+        const [x, y, w, h] = pred.bbox;
+        const label = classMap[pred.class];
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = color;
+        ctx.font = "14px monospace";
+        ctx.fillText(`${label} — FOUND (${Math.round(pred.score * 100)}%)`, x, y - 6);
+      });
+    };
+    drawBoxes(lastItemABoxes, ITEM_A_CLASSES, "#10b981");
+    drawBoxes(lastItemBBoxes, ITEM_B_CLASSES, "#60a5fa");
 
-    txtA.innerText = itemLocked ? "FOUND" : "WAITING";
-    txtA.className = "state-" + (itemLocked ? "found" : "waiting");
+    const itemALocked = lastItemABoxes.length > 0;
+    const itemBLocked = lastItemBBoxes.length > 0;
+
+    txtA.innerText = itemALocked ? "FOUND" : "WAITING";
+    txtA.className = "state-" + (itemALocked ? "found" : "waiting");
+    txtB.innerText = itemBLocked ? "FOUND" : "WAITING";
+    txtB.className = "state-" + (itemBLocked ? "found" : "waiting");
     operatorEl.innerText = verifiedFound ? "VERIFIED OPERATOR" : (faceResults.length > 0 ? "UNKNOWN PERSON" : "Awaiting Scan...");
-    statusText.innerText = `System Pipeline: ACTIVE. Real face match: ${faceResults.length} face(s) checked. Instruments detected: ${lastInstrumentBoxes.length}.`;
+    statusText.innerText = `System Pipeline: ACTIVE. Real face match: ${faceResults.length} face(s) checked. Zone A: ${lastItemABoxes.length}, Zone B (bottle): ${lastItemBBoxes.length}.`;
     statusText.style.color = "var(--accent-green)";
 
     const now = Date.now();
     if (now - lastLogTime > 3000) {
-      const instrumentNames = lastInstrumentBoxes.map(p => RELEVANT_CLASSES[p.class]).join(", ") || "none";
-      pushLog(`Live: ${verifiedFound ? "verified operator matched" : "no verified operator"}, instrument(s): ${instrumentNames}.`);
+      const namesA = lastItemABoxes.map(p => ITEM_A_CLASSES[p.class]).join(", ") || "none";
+      const namesB = lastItemBBoxes.map(p => ITEM_B_CLASSES[p.class]).join(", ") || "none";
+      pushLog(`Live: ${verifiedFound ? "verified operator matched" : "no verified operator"}, Zone A: ${namesA}, Zone B: ${namesB}.`);
       lastLogTime = now;
     }
 
