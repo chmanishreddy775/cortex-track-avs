@@ -259,16 +259,15 @@
             z-index: 2;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 <body>
     <div id="lightfall-bg"></div>
     
     <div style="max-width: 700px; margin: 0 auto 20px auto; background: rgba(59,130,246,0.12); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 14px 18px; color: var(--text-main); font-size: 14px;">
-        🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real AI</strong> in your browser: real object detection filtered to relevant items (phone, bottle, scissors→instrument), and real face matching against our enrolled operator photo. Our production system uses a custom-trained YOLOv8 model + dlib for higher accuracy on actual surgical instruments, running locally. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
+        🔵 <strong>Live Demo Mode</strong> — this hosted page runs <strong>real face recognition</strong> in your browser, matching your live camera feed against our enrolled operator photo. Instrument detection here is a labeled preview overlay; our production system uses a custom-trained YOLOv8 model + dlib running locally for real-time surgical instrument detection and identity verification. See the full local system on <a href="https://github.com/chmanishreddy775/cortex-track-avs" style="color:var(--accent-blue);">GitHub</a>.
     </div>
+
 
 
 
@@ -510,7 +509,6 @@
                             faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
                             faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
                         ]);
-                        const objModel = await cocoSsd.load();
 
                         btn.innerText = "Loading enrolled operator photo...";
                         const REF_IMG_URL = 'https://raw.githubusercontent.com/chmanishreddy775/cortex-track-avs/main/Navaneeth.jpg';
@@ -526,7 +524,7 @@
                         btn.innerText = "Vision Thread Active (Live Detection)";
                         btn.style.backgroundColor = "var(--border-color)";
                         btn.style.cursor = "not-allowed";
-                        runLiveDetection(video, canvas, objModel, faceMatcher);
+                        runLiveDetection(video, canvas, faceMatcher);
                     } catch (e) {
                         camError.style.display = "block";
                         camError.innerText = "⚠️ Setup failed: " + e.message + " — check internet connection and that Navaneeth.jpg is on the main branch.";
@@ -546,7 +544,7 @@
     // Object classes relevant to the demo
     const RELEVANT_CLASSES = ["cell phone", "bottle", "scissors"];
 
-    async function runLiveDetection(video, canvas, objModel, faceMatcher) {
+    async function runLiveDetection(video, canvas, faceMatcher) {
         const ctx = canvas.getContext("2d");
         const statusText = document.getElementById("setupStatus");
         const txtA = document.getElementById("statusItemA");
@@ -554,6 +552,8 @@
         const logBox = document.getElementById("complianceLog");
         const demoHistory = [];
         let lastLogTime = 0;
+        let scanStart = performance.now();
+        const itemBox = { x: canvas.width * 0.12, y: canvas.height * 0.6, w: canvas.width * 0.22, h: canvas.height * 0.18 };
 
         const pushLog = (text) => {
             demoHistory.unshift({ time: new Date().toISOString(), log: text });
@@ -568,19 +568,6 @@
         async function detectLoop() {
             if (!video.srcObject) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Real object detection, filtered to relevant items only
-            const objects = await objModel.detect(video);
-            const relevant = objects.filter(o => RELEVANT_CLASSES.includes(o.class));
-            relevant.forEach(obj => {
-                const label = obj.class === "scissors" ? "Surgical Instrument" : obj.class;
-                ctx.strokeStyle = "#10b981";
-                ctx.lineWidth = 3;
-                ctx.strokeRect(obj.bbox[0], obj.bbox[1], obj.bbox[2], obj.bbox[3]);
-                ctx.fillStyle = "#10b981";
-                ctx.font = "14px monospace";
-                ctx.fillText(`${label} ${(obj.score * 100).toFixed(0)}%`, obj.bbox[0], obj.bbox[1] - 6);
-            });
 
             // Real face detection + identity match against enrolled reference photo
             const faceResults = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
@@ -600,15 +587,27 @@
                 if (isVerified) verifiedFound = true;
             });
 
-            txtA.innerText = relevant.length > 0 ? "FOUND" : "WAITING";
-            txtA.className = "state-" + (relevant.length > 0 ? "found" : "waiting");
+            // Simulated instrument overlay (labeled) — item detection stays local/Python-side for real accuracy
+            const elapsed = performance.now() - scanStart;
+            const itemLocked = elapsed > 1500;
+            if (itemLocked) {
+                ctx.strokeStyle = "#10b981";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(itemBox.x, itemBox.y, itemBox.w, itemBox.h);
+                ctx.fillStyle = "#10b981";
+                ctx.font = "14px monospace";
+                ctx.fillText("Instrument — FOUND (preview overlay)", itemBox.x, itemBox.y - 6);
+            }
+
+            txtA.innerText = itemLocked ? "FOUND" : "WAITING";
+            txtA.className = "state-" + (itemLocked ? "found" : "waiting");
             operatorEl.innerText = verifiedFound ? "VERIFIED OPERATOR" : (faceResults.length > 0 ? "UNKNOWN PERSON" : "Awaiting Scan...");
-            statusText.innerText = `System Pipeline: ACTIVE. ${relevant.length} instrument(s), ${faceResults.length} face(s) detected live.`;
+            statusText.innerText = `System Pipeline: ACTIVE. Real face match: ${faceResults.length} face(s) checked.`;
             statusText.style.color = "var(--accent-green)";
 
             const now = Date.now();
             if (now - lastLogTime > 3000) {
-                pushLog(`Live: ${relevant.length} instrument(s), ${verifiedFound ? "verified operator" : "no verified operator"}.`);
+                pushLog(`Live: ${verifiedFound ? "verified operator matched" : "no verified operator"}, instrument preview ${itemLocked ? "FOUND" : "WAITING"}.`);
                 lastLogTime = now;
             }
 
