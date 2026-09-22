@@ -27,10 +27,7 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, operator TEXT, event_log TEXT)''')
 
     authorized_users = [
-        ("manish", b"mani@2007"),
-        ("karthik", b"karthik@2007"),
-        ("aravind", b"aravind@2007"),
-        ("bunny", b"bunny@2007")
+        ("admin", b"admin@1234"),
     ]
 
     for username, password in authorized_users:
